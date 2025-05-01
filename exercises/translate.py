@@ -1,9 +1,14 @@
 import requests
+import os
 import json
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configuration
 API_URL = "https://api.sunbird.ai/tasks/nllb_translate"
-ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRyaWNrY21kIiwiYWNjb3VudF90eXBlIjoiRnJlZSIsImV4cCI6NDg2OTE4NjUzOX0.wcFG_GjBSNVZCpP4NPC2xk6Dio8Jdd8vMb8e_rzXOFc"
+ACCESS_TOKEN = os.getenv("AUTH_TOKEN")
 
 # Supported languages (code: full name)
 SUPPORTED_LANGUAGES = {

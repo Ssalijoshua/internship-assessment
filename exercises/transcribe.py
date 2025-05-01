@@ -1,10 +1,13 @@
 import requests
 import os
 from pydub import AudioSegment
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configuration
 API_URL = "https://api.sunbird.ai/tasks/org/stt"
-ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRyaWNrY21kIiwiYWNjb3VudF90eXBlIjoiRnJlZSIsImV4cCI6NDg2OTE4NjUzOX0.wcFG_GjBSNVZCpP4NPC2xk6Dio8Jdd8vMb8e_rzXOFc"
+ACCESS_TOKEN = os.getenv("AUTH_TOKEN")
 SUPPORTED_FORMATS = ['.wav', '.mp3', '.ogg', '.m4a', '.aac']
 MAX_DURATION = 5 * 60 * 1000  # 5 minutes in milliseconds
 
