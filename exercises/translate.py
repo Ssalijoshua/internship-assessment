@@ -5,7 +5,7 @@ import json
 API_URL = "https://api.sunbird.ai/tasks/nllb_translate"
 ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRyaWNrY21kIiwiYWNjb3VudF90eXBlIjoiRnJlZSIsImV4cCI6NDg2OTE4NjUzOX0.wcFG_GjBSNVZCpP4NPC2xk6Dio8Jdd8vMb8e_rzXOFc"
 
-# Supported languages (from API error message)
+# Supported languages (code: full name)
 SUPPORTED_LANGUAGES = {
     "ach": "Acholi",
     "teo": "Ateso",
@@ -35,25 +35,39 @@ def translate_text(text, source_lang, target_lang):
         return f"Error: {str(e)}"
 
 def main():
-    print("🌍 Sunbird AI Translator (Supported Languages)")
+    print("🌍 Sunbird AI Translator")
+    print("Supported languages:")
     for code, name in SUPPORTED_LANGUAGES.items():
-        print(f"{code}: {name}")
+        print(f"  {code}: {name}")
     
-    print("\nEnter 'quit' to exit")
     while True:
-        text = input("\nText to translate: ")
-        if text.lower() == 'quit':
+        # Get source language
+        source_lang = input("\nChoose source language (code, e.g. 'eng'): ").strip().lower()
+        if source_lang == 'quit':
             break
-            
-        source_lang = input("Source language code (e.g. 'eng'): ").strip()
-        target_lang = input("Target language code (e.g. 'lug'): ").strip()
-        
-        if source_lang not in SUPPORTED_LANGUAGES or target_lang not in SUPPORTED_LANGUAGES:
+        if source_lang not in SUPPORTED_LANGUAGES:
             print("Error: Unsupported language code. Try again.")
             continue
-            
+
+        # Get target language (must differ from source)
+        target_lang = input("Choose target language (code, e.g. 'lug'): ").strip().lower()
+        if target_lang == 'quit':
+            break
+        if target_lang not in SUPPORTED_LANGUAGES:
+            print("Error: Unsupported language code. Try again.")
+            continue
+        if target_lang == source_lang:
+            print("Error: Target language must be different from source language.")
+            continue
+
+        # Get text to translate
+        text = input(f"Enter text to translate ({SUPPORTED_LANGUAGES[source_lang]}): ")
+        if text.lower() == 'quit':
+            break
+
+        # Translate and display
         translated = translate_text(text, source_lang, target_lang)
-        print(f"\nTranslation: {translated}")
+        print(f"\nTranslation ({SUPPORTED_LANGUAGES[target_lang]}): {translated}\n")
 
 if __name__ == "__main__":
     main()

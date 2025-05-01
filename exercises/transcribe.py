@@ -4,11 +4,31 @@ from pydub import AudioSegment
 
 # Configuration
 API_URL = "https://api.sunbird.ai/tasks/org/stt"
-ACSESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRyaWNrY21kIiwiYWNjb3VudF90eXBlIjoiRnJlZSIsImV4cCI6NDg2OTE4NjUzOX0.wcFG_GjBSNVZCpP4NPC2xk6Dio8Jdd8vMb8e_rzXOFc"
+ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRyaWNrY21kIiwiYWNjb3VudF90eXBlIjoiRnJlZSIsImV4cCI6NDg2OTE4NjUzOX0.wcFG_GjBSNVZCpP4NPC2xk6Dio8Jdd8vMb8e_rzXOFc"
 SUPPORTED_FORMATS = ['.wav', '.mp3', '.ogg', '.m4a', '.aac']
+MAX_DURATION = 5 * 60 * 1000  # 5 minutes in milliseconds
+
+# Supported languages (API-compatible codes)
+SUPPORTED_LANGUAGES = {
+    "eng": "English",
+    "lug": "Luganda",
+    "nyn": "Runyankole",
+    "teo": "Ateso",
+    "lgg": "Lugbara",
+    "ach": "Acholi"
+}
+
+def get_audio_duration(audio_path):
+    """Return audio duration in milliseconds."""
+    try:
+        audio = AudioSegment.from_file(audio_path)
+        return len(audio)
+    except Exception as e:
+        print(f"Error reading audio: {str(e)}")
+        return None
 
 def convert_audio(input_path, output_format='wav'):
-    """Convert audio to API-supported format if needed"""
+    """Convert audio to API-supported format if needed."""
     try:
         audio = AudioSegment.from_file(input_path)
         filename = f"converted.{output_format}"
@@ -18,16 +38,16 @@ def convert_audio(input_path, output_format='wav'):
         print(f"Conversion failed: {str(e)}")
         return None
 
-def transcribe_audio(audio_path):
-    """Send audio to Sunbird AI API"""
-    headers = {"Authorization": f"Bearer {ACSESS_TOKEN}"}
+def transcribe_audio(audio_path, language):
+    """Send audio to Sunbird AI API for transcription."""
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
     
     try:
         with open(audio_path, 'rb') as audio_file:
             files = {'audio': (os.path.basename(audio_path), audio_file, 'audio/wav')}
             data = {
-                'language': 'eng',
-                'adapter': 'eng',
+                'language': language,
+                'adapter': language,
                 'recognise_speakers': 'false',
                 'whisper': 'false'
             }
@@ -38,20 +58,29 @@ def transcribe_audio(audio_path):
         return f"Error: {str(e)}"
 
 def main():
-    print("\n🔊 Sunbird AI File Transcriber")
-    print("Note: Supports WAV, MP3, OGG, M4A, AAC files\n")
+    print("\n🔊 Sunbird AI Audio Transcriber")
+    print(f"Supported languages: {', '.join(SUPPORTED_LANGUAGES.values())}\n")
     
     while True:
-        audio_path = input("Enter AUDIO path (or 'quit'): ").strip(' "\'')
-        
+        # Get audio file path
+        audio_path = input("Please provide path to the audio file (Audio length ≤5 minutes): ").strip(' "\'')
         if audio_path.lower() == 'quit':
             break
-            
+        
+        # Validate file existence
         if not os.path.exists(audio_path):
-            print("File not found. Try again.")
+            print("Error: File not found. Try again.")
             continue
-            
-        # Handle format conversion if needed
+        
+        # Check audio duration
+        duration = get_audio_duration(audio_path)
+        if duration is None:
+            continue
+        if duration > MAX_DURATION:
+            print(f"Error: Audio is {duration/60000:.1f} minutes (max 5 minutes allowed).")
+            continue
+        
+        # Handle format conversion
         ext = os.path.splitext(audio_path)[1].lower()
         if ext not in SUPPORTED_FORMATS:
             print("Converting to WAV format...")
@@ -59,19 +88,24 @@ def main():
             if not converted_path:
                 continue
             audio_path = converted_path
-            
-        print("Transcribing...")
-        transcription = transcribe_audio(audio_path)
         
-        print("\nResult:")
+        # Get target language
+        print("\nSupported language codes:")
+        for code, name in SUPPORTED_LANGUAGES.items():
+            print(f"  {code}: {name}")
+        
+        while True:
+            language = input("Choose target language code (e.g., 'lug' for Luganda): ").strip().lower()
+            if language in SUPPORTED_LANGUAGES:
+                break
+            print("Error: Unsupported language. Try again.")
+        
+        # Transcribe and display
+        print("\nTranscribing...")
+        transcription = transcribe_audio(audio_path, language)
+        
+        print(f"\nAudio transcription text in {SUPPORTED_LANGUAGES[language]}:")
         print(transcription)
-        
-        # # Save to file
-        # save = input("\nSave to text file? (y/N): ").lower()
-        # if save == 'y':
-        #     with open("transcription.txt", 'w') as f:
-        #         f.write(transcription)
-        #     print("Saved to transcription.txt")
 
 if __name__ == "__main__":
     try:
