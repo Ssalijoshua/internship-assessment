@@ -8,7 +8,8 @@ load_dotenv()
 # Configuration
 API_URL = "https://api.sunbird.ai/tasks/org/stt"
 ACCESS_TOKEN = os.getenv("AUTH_TOKEN")
-SUPPORTED_FORMATS = ['.wav', '.mp3', '.ogg', '.m4a', '.aac']
+# SUPPORTED_FORMATS = ['.wav', '.mp3', '.ogg', '.m4a', '.aac']
+SUPPORTED_FORMATS = ['.wav', '.mp3']
 MAX_DURATION = 5 * 60 * 1000  # 5 minutes in milliseconds
 
 # Supported languages (API-compatible codes)
